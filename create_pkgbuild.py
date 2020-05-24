@@ -314,10 +314,13 @@ package() {
                          if dependency not in exclude_dependencies]
 
         python_version_major = python_version.split('.')[0]
+        python_version_minor = python_version.split('.')[1]
         python_version_full = python_version
         # Python 3 include directory is /usr/include/python3.4m... Because why not?
         if python_version_major == "3":
             python_version_full = "%s%s" % (python_version_full, "m")
+            if int(python_version_minor) >= 8:
+                python_version_full = "%s" % (python_version)
 
         # PYTHON_BASENAME for PySide:
         # If Python 2.7: PySideConfig{-python2.7}.cmake
