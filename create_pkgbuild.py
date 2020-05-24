@@ -237,55 +237,65 @@ class PackageBase(object):
 
 class Package(PackageBase):
     BUILD_TEMPLATE = """# Script generated with create_pkgbuild.py
-    # For more information: https://github.com/ros-melodic-arch/ros-build-tools-py3
-    pkgdesc="ROS - %(description)s"
-    url='%(site_url)s'
+# For more information: https://github.com/ros-melodic-arch/ros-build-tools-py3
+pkgdesc="ROS - %(description)s"
+url='%(site_url)s'
 
-    pkgname='ros-%(distro)s-%(arch_package_name)s'
-    pkgver='%(package_version)s'
-    arch=('any')
-    pkgrel=%(package_release)s
-    license=('%(license)s')
+pkgname='ros-%(distro)s-%(arch_package_name)s'
+pkgver='%(package_version)s'
+arch=('i686' 'x86_64' 'aarch64' 'armv7h' 'armv6h')
+pkgrel=%(package_release)s
+license=('%(license)s')
 
-    ros_makedepends=(%(ros_build_dependencies)s)
-    makedepends=('cmake' 'ros-build-tools'
-    ${ros_makedepends[@]}
-    %(other_build_dependencies)s)
+ros_makedepends=(
+  %(ros_build_dependencies)s
+)
 
-    ros_depends=(%(ros_run_dependencies)s)
-    depends=(${ros_depends[@]}
-    %(other_run_dependencies)s)
+makedepends=(
+  'cmake' 'ros-build-tools'
+  ${ros_makedepends[@]}
+  %(other_build_dependencies)s
+)
 
-    build() {
-        # Use ROS environment variables
-        source /usr/share/ros-build-tools/clear-ros-env.sh
-        [ -f /opt/ros/%(distro)s/setup.bash ] && source /opt/ros/%(distro)s/setup.bash
+ros_depends=(
+  %(ros_run_dependencies)s
+)
 
-        # Create build directory
-        [ -d ${srcdir}/build ] || mkdir ${srcdir}/build
-        cd ${srcdir}/build
+depends=(
+  ${ros_depends[@]}
+  %(other_run_dependencies)s
+)
 
-        # Fix Python2/Python3 conflicts
-        /usr/share/ros-build-tools/fix-python-scripts.sh -v %(python_version_major)s ${srcdir}/${_dir}
+build() {
+  # Use ROS environment variables
+  source /usr/share/ros-build-tools/clear-ros-env.sh
+  [ -f /opt/ros/%(distro)s/setup.bash ] && source /opt/ros/%(distro)s/setup.bash
 
-        # Build project
-        cmake ${srcdir}/${_dir} \\
-                -DCMAKE_BUILD_TYPE=Release \\
-                -DCATKIN_BUILD_BINARY_PACKAGE=%(binary)s \\
-                -DCMAKE_INSTALL_PREFIX=/opt/ros/%(distro)s \\
-                -DPYTHON_EXECUTABLE=%(python_executable)s \\
-                -DPYTHON_INCLUDE_DIR=%(python_include_dir)s \\
-                -DPYTHON_LIBRARY=%(python_library)s \\
-                -DPYTHON_BASENAME=%(python_basename)s \\
-                -DSETUPTOOLS_DEB_LAYOUT=OFF
-    make
-    }
+  # Create build directory
+  [ -d ${srcdir}/build ] || mkdir ${srcdir}/build
+  cd ${srcdir}/build
 
-    package() {
-    cd "${srcdir}/build"
-    make DESTDIR="${pkgdir}/" install
-    }
-    """
+  # Fix Python2/Python3 conflicts
+  /usr/share/ros-build-tools/fix-python-scripts.sh -v %(python_version_major)s ${srcdir}/${_dir}
+
+  # Build project
+  cmake ${srcdir}/${_dir} \\
+    -DCMAKE_BUILD_TYPE=Release \\
+    -DCATKIN_BUILD_BINARY_PACKAGE=%(binary)s \\
+    -DCMAKE_INSTALL_PREFIX=/opt/ros/%(distro)s \\
+    -DPYTHON_EXECUTABLE=%(python_executable)s \\
+    -DPYTHON_INCLUDE_DIR=%(python_include_dir)s \\
+    -DPYTHON_LIBRARY=%(python_library)s \\
+    -DPYTHON_BASENAME=%(python_basename)s \\
+    -DSETUPTOOLS_DEB_LAYOUT=OFF
+  make
+}
+
+package() {
+  cd "${srcdir}/build"
+  make DESTDIR="${pkgdir}/" install
+}
+"""
 
     def generate(self, python_version, exclude_dependencies=[], rosdep_urls=[],
                  output_dir=None):
@@ -348,34 +358,44 @@ class Package(PackageBase):
 
         # Post-processing:
         # Remove useless carriage return
-        pkgbuild = re.sub('\\n  \)', ')', pkgbuild)
+        pkgbuild = re.sub('\\n\\s+\)', '\n)', pkgbuild)
         return pkgbuild
 
 
 class MetaPackage(PackageBase):
     BUILD_TEMPLATE = """# Script generated with create_pkgbuild.py
-  # For more information: https://github.com/ros-melodic-arch/ros-build-tools-py3
-  pkgdesc="ROS - %(description)s"
-  url='%(site_url)s'
+# For more information: https://github.com/ros-melodic-arch/ros-build-tools-py3
+pkgdesc="ROS - %(description)s"
+url='%(site_url)s'
 
-  pkgname='ros-%(distro)s-%(arch_package_name)s'
-  pkgver='%(package_version)s'
-  arch=('any')
-  pkgrel=%(package_release)s
-  license=('%(license)s')
+pkgname='ros-%(distro)s-%(arch_package_name)s'
+pkgver='%(package_version)s'
+arch=('i686' 'x86_64' 'aarch64' 'armv7h' 'armv6h')
+pkgrel=%(package_release)s
+license=('%(license)s')
 
-  ros_makedepends=(%(ros_build_dependencies)s)
-  makedepends=('cmake' 'ros-build-tools'
+ros_makedepends=(
+  %(ros_build_dependencies)s
+)
+
+makedepends=(
+  'cmake' 'ros-build-tools'
   ${ros_makedepends[@]}
-  %(other_build_dependencies)s)
+  %(other_build_dependencies)s
+)
 
-  ros_depends=(%(ros_run_dependencies)s)
-  depends=(${ros_depends[@]}
-  %(other_run_dependencies)s)
- 
-  source=()
-  md5sums=()
-  """
+ros_depends=(
+  %(ros_run_dependencies)s
+)
+
+depends=(
+  ${ros_depends[@]}
+  %(other_run_dependencies)s
+)
+
+source=()
+md5sums=()
+"""
 
     def __init__(self, distro, repository_url, name, version):
         try:
@@ -417,8 +437,8 @@ class MetaPackage(PackageBase):
 
         # Post-processing:
         # Remove useless carriage return
-        pkgbuild = re.sub('\${ros_depends\[@\]}\\n  \)',
-                          '${ros_depends[@]})', pkgbuild)
+        pkgbuild = re.sub('\${ros_depends\[@\]}\\n\\s+\)',
+                          '${ros_depends[@]}\n)', pkgbuild)
         return pkgbuild
 
 
