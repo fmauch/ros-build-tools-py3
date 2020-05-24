@@ -731,12 +731,12 @@ def main():
 
     # Dictionary containing valid Python versions
     valid_python_versions = {"kinetic": ["2.7", "3.7"],
-                             "melodic": ["2.7", "3.7"]}
+                             "melodic": ["2.7", "3.7", "3.8"]}
 
     # Default Python version that will be used
     # Even though the official python version for melodic is stil 2.7, the official one for Arch is 3.
     default_python_version = {"kinetic": "2.7",
-                              "melodic": "3.7"}
+                              "melodic": "3.8"}
 
     python_version = default_python_version[args.distro]
     if args.python_version != "":
